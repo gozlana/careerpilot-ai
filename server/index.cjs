@@ -238,8 +238,17 @@ ${jobDescription || "No job description provided"}
     ],
     learningPath: learningResult.recommendations || [],
     atsMatchScore: atsResult.atsMatchScore,
-    keywordMatches: atsResult.keywordMatches,
-    missingKeywords: atsResult.missingKeywords,
+    foundKeywords: Array.isArray(atsResult.foundKeywords)
+      ? atsResult.foundKeywords
+      : Array.isArray(atsResult.keywordMatches)
+        ? atsResult.keywordMatches
+        : Array.isArray(atsResult.matchedKeywords)
+          ? atsResult.matchedKeywords
+          : [],
+
+    missingKeywords: Array.isArray(atsResult.missingKeywords)
+      ? atsResult.missingKeywords
+      : [],
     atsSuggestions: atsResult.atsSuggestions,
     coverLetter: coverLetterAgent,
   });
