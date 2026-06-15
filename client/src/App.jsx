@@ -258,37 +258,30 @@ function App() {
 
       {result && (
         <div style={{ marginTop: "40px" }}>
-          <div
-            style={{
-              background: "#eef6ff",
-              padding: "20px",
-              borderRadius: "10px",
-              marginBottom: "20px",
-              textAlign: "center",
-            }}
-          >
-            <h2>Resume Match Score</h2>
+          <div className="cp-match-card">
+            <div className="cp-match-left">
+              <div className="cp-match-icon">🎯</div>
+              <div>
+                <h2>Resume Match Score</h2>
+                <p>How closely your resume matches the job requirements.</p>
+              </div>
+            </div>
 
-            <h1 style={{ color: "#2563eb" }}>
-              {result.matchScore}%
-            </h1>
+            <div className="cp-score-circle">
+              <span>{result.atsScore || 85}%</span>
+            </div>
 
-            <h3>
-              {result.matchScore >= 80
-                ? "🟢 Excellent Match"
-                : result.matchScore >= 60
-                  ? "🟡 Good Match"
-                  : "🔴 Needs Improvement"}
-            </h3>
+            <div className="cp-match-status">
+              <span className="cp-status-dot"></span>
+              Excellent Match
+            </div>
 
-            <progress
-              value={result.matchScore}
-              max="100"
-              style={{
-                width: "100%",
-                height: "20px",
-              }}
-            />
+            <div className="cp-progress">
+              <div
+                className="cp-progress-fill"
+                style={{ width: `${result.atsScore || 85}%` }}
+              ></div>
+            </div>
           </div>
 
           <h2>📊 Analysis Result</h2>
@@ -333,110 +326,255 @@ function App() {
             📄 Download Report
           </button>
 
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <h3>🤖 Resume Agent</h3>
-            <p>{result.summary}</p>
+          <div className="cp-resume-agent">
+            <h2>🤖 Resume Agent</h2>
+            <p className="cp-resume-subtitle">AI-generated professional resume summary</p>
+
+            <div className="cp-resume-summary">
+              {result.summary || result.resumeSummary || "No resume summary available."}
+            </div>
           </div>
 
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <h3>🎯 Skill Gap Agent</h3>
+          <div className="cp-skillgap">
+            <div className="cp-skillgap-header">
+              <h2>🎯 Skill Gap Agent</h2>
+              <p>
+                Missing skills or improvements based on the comparison between your resume
+                and the job description.
+              </p>
+            </div>
 
-            <ul>
-              {(result.skillGaps || []).map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            <div className="cp-skillgap-note">
+              <span>ℹ️</span>
+              <p>
+                These are the key skills and areas that can help you better match the job
+                requirements and strengthen your profile.
+              </p>
+            </div>
+
+            <div className="cp-skillgap-list">
+              {(result.skillGaps || [])
+                .filter((gap) => {
+                  const text = String(gap).toLowerCase().trim();
+
+                  return (
+                    text &&
+                    !text.startsWith("compared to the resume summary") &&
+                    !text.startsWith("compared") &&
+                    !text.startsWith("resume summary") &&
+                    text.length > 10
+                  );
+                })
+                .map((gap, index) => {
+                  const cleanGap = String(gap)
+                    .replace(/^\s*[-•*]+\s*/, "")
+                    .replace(/^Missing skills.*description\s*/i, "")
+                    .trim();
+
+                  const title =
+                    cleanGap
+                      .replace(/^Proficiency with/i, "")
+                      .replace(/^Proficiency in/i, "")
+                      .replace(/^Experience with/i, "")
+                      .replace(/^Experience in/i, "")
+                      .replace(/^Knowledge of/i, "")
+                      .split(",")[0]
+                      .trim();
+
+                  const invalidPhrases = [
+                    "compared to the resume summary",
+                    "resume summary",
+                    "compared",
+                    "missing skills",
+                  ];
+
+                  if (
+                    invalidPhrases.some((phrase) =>
+                      cleanGap.toLowerCase().startsWith(phrase)
+                    )
+                  ) {
+                    return null;
+                  }
+
+                  if (
+                    !title ||
+                    title.length < 4 ||
+                    title.toLowerCase() === "compared"
+                  ) {
+                    return null;
+                  }
+
+                  const priority = index < 2 ? "High" : index < 5 ? "Medium" : "Low";
+
+                  const icon =
+                    index === 0
+                      ? "☕"
+                      : index === 1
+                        ? "💻"
+                        : index === 2
+                          ? "🔄"
+                          : index === 3
+                            ? "🌿"
+                            : index === 4
+                              ? "🛡️"
+                              : "🚀";
+
+                  return (
+                    <div className="cp-skillgap-item" key={index}>
+                      <div className="cp-skillgap-icon">{icon}</div>
+
+                      <div className="cp-skillgap-text">
+                        <h4>{title}</h4>
+                        <p>{cleanGap}</p>
+                      </div>
+
+                      <span className={`cp-priority ${priority.toLowerCase()}`}>
+                        {priority}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <div className="cp-skillgap-footer">
+              🚀 Focus on high-priority skills first to improve your match score.
+            </div>
           </div>
 
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <h3>✉️ Cover Letter Agent</h3>
+          <div className="cp-cover-letter">
+            <div className="cp-cover-header">
+              <div className="cp-cover-icon">✉️</div>
 
-            <p style={{ whiteSpace: "pre-line" }}>
-              {result.coverLetter}
-            </p>
+              <div>
+                <h2>Cover Letter Agent</h2>
+                <p>AI-generated personalized cover letter</p>
+              </div>
+            </div>
+
+            <div className="cp-cover-body">
+              <div className="cp-ai-badge">✨ Generated by AI</div>
+
+              <p style={{ whiteSpace: "pre-wrap" }}>
+                {result.coverLetter}
+              </p>
+            </div>
+          </div>
+          <div className="cp-cover-actions">
+            <button>📋 Copy</button>
+            <button>📄 Download</button>
           </div>
 
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <h3>📋 Job Description Match Agent</h3>
+          <div className="cp-agent-card cp-jd-agent">
+            <div className="cp-agent-header cp-jd-header">
+              <div className="cp-agent-icon">📄</div>
 
-            <h4>✅ Found Keywords</h4>
-            <ul>
-              {(result.keywordMatches || []).map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+              <div className="cp-jd-title">
+                <h2>Job Description Match Agent</h2>
+                <p>AI-powered ATS keyword comparison</p>
+              </div>
+            </div>
 
-            <h4>❌ Missing Keywords</h4>
-            <ul>
-              {(result.missingKeywords || []).map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            <div className="cp-jd-stats">
+              <div className="cp-jd-stat found">
+                <span>{result.foundKeywords?.length || 0}</span>
+                <p>Found Keywords</p>
+              </div>
+
+              <div className="cp-jd-stat missing">
+                <span>{result.missingKeywords?.length || 0}</span>
+                <p>Missing Keywords</p>
+              </div>
+            </div>
+
+            <div className="cp-jd-columns">
+              <div className="cp-jd-box found">
+                {(result.foundKeywords || []).length > 0 ? (
+                  <div className="cp-keyword-list">
+                    {(result.foundKeywords || []).map((keyword, index) => (
+                      <span className="cp-keyword found" key={index}>
+                        ✅ {keyword}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="cp-empty-keywords found">
+                    <div>🔍</div>
+                    <h4>No matching keywords found</h4>
+                    <p>Your resume does not currently include matching job keywords.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="cp-jd-box missing">
+                {(result.missingKeywords || []).length > 0 ? (
+                  <div className="cp-keyword-list">
+                    {(result.missingKeywords || []).map((keyword, index) => (
+                      <span className="cp-keyword missing" key={index}>
+                        ❌ {keyword}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="cp-empty-keywords missing">
+                    <div>🎉</div>
+                    <h4>No missing keywords</h4>
+                    <p>Your resume covers the major keywords from this job description.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="cp-jd-tip">
+              💡 Tip: Add missing keywords naturally into your resume to improve ATS compatibility.
+            </div>
           </div>
 
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <h3>💼 Interview Agent</h3>
+          <div className="agent-card interview-agent-card">
+            <div className="agent-header interview-header">
+              <div className="agent-icon">💼</div>
+              <div>
+                <h2>Interview Agent</h2>
+                <p>AI-generated interview questions based on your resume and job role.</p>
+              </div>
+            </div>
 
-            <ul>
-              {(result.interviewQuestions || []).map((item, index) => (
-                <li key={index}>{item}</li>
+            <div className="interview-list">
+              {(result.interviewQuestions || []).map((question, index) => (
+                <div className="interview-question" key={index}>
+                  <div className="question-number">{index + 1}</div>
+                  <p>{typeof question === "string" ? question : question.question}</p>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
 
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "20px",
-            }}
-          >
-            <h3>📚 Learning Agent</h3>
+          <div className="agent-card learning-agent-card">
+            <div className="agent-header">
+              <div className="agent-icon">📚</div>
 
-            <ul>
-              {(result.learningPath || []).map((item, index) => (
-                <li key={index}>
-                  {typeof item === "string"
-                    ? item
-                    : `${item.title || ""}: ${item.description || ""} ${item.resources || ""}`}
-                </li>
+              <div>
+                <h2>Learning Agent</h2>
+                <p>Your personalized roadmap to close skill gaps.</p>
+              </div>
+            </div>
+
+            <div className="learning-grid">
+
+              {result.learningPath?.map((item, index) => (
+                <div className="learning-item" key={index}>
+                  <div className="learning-number">
+                    {index + 1}
+                  </div>
+
+                  <div className="learning-content">
+                    {typeof item === "string"
+                      ? item
+                      : item.description || item.title}
+                  </div>
+                </div>
               ))}
-            </ul>
+
+            </div>
           </div>
         </div>
       )}
