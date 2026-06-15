@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const { PDFParse } = require("pdf-parse");
+const callFoundry = require("./services/foundryService");
 
 require("dotenv").config();
 const OpenAI = require("openai");
@@ -24,17 +25,7 @@ function safeParseAI(text) {
 }
 
 async function callAI(prompt) {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-  });
-
-  return response.choices[0].message.content;
+  return await callFoundry(prompt);
 }
 
 const app = express();
@@ -53,6 +44,12 @@ app.get("/", (req, res) => {
 
 app.post("/api/analyze", async (req, res) => {
   const { resumeText, targetRole, jobDescription } = req.body;
+
+  if (!jobDescription || !jobDescription.trim()) {
+    return res.status(400).json({
+      error: "Job description is required."
+    });
+  }
 
   if (!resumeText || !targetRole) {
     return res.status(400).json({
@@ -83,7 +80,9 @@ ${resumeAgent}
 Job Description:
 ${jobDescription}
 
-Return only bullet points.
+Rules:
+-Do NOT use dashes.
+-Do NOT use numbers.
 `);
 
   const interviewAgent = await callAI(`

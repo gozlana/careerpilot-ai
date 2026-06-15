@@ -83,60 +83,95 @@ function App() {
 
   const downloadReport = () => {
     const doc = new jsPDF();
-
     let y = 20;
 
-    doc.setFontSize(22);
-    doc.text("CareerPilot AI Report", 20, y);
+    const addPageIfNeeded = (space = 20) => {
+      if (y + space > 280) {
+        doc.addPage();
+        y = 20;
+      }
+    };
 
-    y += 15;
-    doc.setFontSize(16);
-    doc.text(`Resume Match Score: ${result.matchScore}%`, 20, y);
+    const addHeading = (text) => {
+      addPageIfNeeded(20);
+      doc.setFontSize(14);
+      doc.setFont(undefined, "bold");
+      doc.text(text, 20, y);
+      y += 10;
+      doc.setFont(undefined, "normal");
+    };
 
-    y += 15;
-    doc.setFontSize(14);
-    doc.text("Resume Analysis:", 20, y);
+    const addParagraph = (text) => {
+      doc.setFontSize(12);
+      const lines = doc.splitTextToSize(text || "N/A", 170);
+      addPageIfNeeded(lines.length * 7);
+      doc.text(lines, 20, y);
+      y += lines.length * 7 + 10;
+    };
 
-    y += 10;
-    doc.setFontSize(12);
-    doc.text(result.summary || "", 20, y, {
-      maxWidth: 170,
-    });
+    const addBullets = (items) => {
+      doc.setFontSize(12);
 
-    y += 30;
+      (items || []).forEach((item) => {
+        const text =
+          (
+            typeof item === "string"
+              ? item
+              : `${item.title || ""}: ${item.description || ""}`
+          ).replace(/^[•\-\s]+/, "");
 
-    doc.setFontSize(14);
-    doc.text("Skill Gaps:", 20, y);
+        const lines = doc.splitTextToSize(`• ${text}`, 160);
+        addPageIfNeeded(lines.length * 7);
+        doc.text(lines, 25, y);
+        y += lines.length * 7 + 3;
+      });
 
-    y += 10;
-
-    result.skillGaps.forEach((gap) => {
-      doc.text(`• ${gap}`, 25, y);
       y += 8;
-    });
+    };
 
-    y += 10;
+    doc.setFontSize(22);
+    doc.setFont(undefined, "bold");
+    doc.text("CareerPilot AI Report", 20, y);
+    y += 18;
+
+    doc.setFontSize(16);
+    doc.text(`Resume Match Score: ${result.matchScore || 0}%`, 20, y);
+    y += 18;
+
+    addHeading("Resume Analysis");
+    addParagraph(result.summary);
+
+    addHeading("Skill Gaps");
+    addBullets(result.skillGaps);
+
+    addHeading("Missing Keywords");
+    addBullets(result.missingKeywords);
+
+    addHeading("Interview Questions");
+    addBullets(result.interviewQuestions);
+
+    addHeading("Learning Path");
+    addBullets(result.learningPath);
+
+    doc.addPage();
+    y = 20;
+
     doc.setFontSize(14);
-    doc.text("Interview Questions:", 20, y);
-    y += 10;
-
-    (result.interviewQuestions || []).forEach((question) => {
-      doc.text(`• ${question}`, 25, y, { maxWidth: 160 });
-      y += 10;
-    });
+    doc.setFont(undefined, "bold");
+    doc.text("Cover Letter", 20, y);
 
     y += 10;
-    doc.setFontSize(14);
-    doc.text("Learning Plan:", 20, y);
-    y += 10;
 
-    (result.learningPath || []).forEach((item) => {
-      doc.text(`• ${item}`, 25, y, { maxWidth: 160 });
-      y += 10;
-    });
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(12);
 
+    const coverLines = doc.splitTextToSize(result.coverLetter || "", 170);
+    doc.text(coverLines, 20, y);
+
+    y += coverLines.length * 7;
     doc.save("CareerPilot_Report.pdf");
   };
+
 
   return (
     <div
