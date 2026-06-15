@@ -172,6 +172,29 @@ function App() {
     doc.save("CareerPilot_Report.pdf");
   };
 
+  const copyCoverLetter = () => {
+    if (!result?.coverLetter) return;
+
+    navigator.clipboard.writeText(result.coverLetter);
+    alert("Cover letter copied!");
+  };
+
+  const downloadCoverLetter = () => {
+    if (!result?.coverLetter) return;
+
+    const blob = new Blob([result.coverLetter], {
+      type: "text/plain",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "cover-letter.txt";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div
@@ -460,8 +483,12 @@ function App() {
             </div>
           </div>
           <div className="cp-cover-actions">
-            <button>📋 Copy</button>
-            <button>📄 Download</button>
+            <button onClick={copyCoverLetter}>
+              📋 Copy
+            </button>
+            <button onClick={downloadCoverLetter}>
+              📄 Download
+            </button>
           </div>
 
           <div className="cp-agent-card cp-jd-agent">
