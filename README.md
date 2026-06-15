@@ -82,26 +82,6 @@ PDF Report
 
 ---
 
-## 📷 Screenshots
-
-### Home Page
-
-(Add screenshot here)
-
-### Resume Analysis
-
-(Add screenshot here)
-
-### Skill Gap Analysis
-
-(Add screenshot here)
-
-### PDF Report
-
-(Add screenshot here)
-
----
-
 ## 🚀 Getting Started
 
 ### Clone the repository
